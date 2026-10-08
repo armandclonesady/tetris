@@ -37,6 +37,8 @@ func _init(p_type: String, p_position: Vector2i = Vector2i(4,1)) -> void:
 
 func rotate(clockwise: bool = true) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
+	if (type == "O"):
+		return SHAPES.get("O")
 	for cell in shape:
 		if clockwise:
 			result.append(Vector2i(-cell.y, cell.x))

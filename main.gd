@@ -11,10 +11,16 @@ var _board: Board
 var _current_piece: Piece
 var _seven_bag: Array[Piece] = []
 
+func change_piece() -> void:
+	seven_bag()
+	if not _board.piece_fit(_current_piece.position, _current_piece):
+		print("Game Over")
+
 func fill_seven_bag() -> void:
 	for value in Piece.TYPES:
 		_seven_bag.append(Piece.new(value))
 	_seven_bag.shuffle()
+	_seven_bag.append(Piece.new("O"))
 
 func seven_bag() -> void:
 	if (_seven_bag.size() == 0):
@@ -41,7 +47,7 @@ func _process(delta: float) -> void:
 			_board.lock(_current_piece)
 			var lines_to_clean = _board.check_lines()
 			_board.clear_lines(lines_to_clean)
-			seven_bag()
+			change_piece()
 		else:
 			_current_piece.position += Vector2i.DOWN
 			queue_redraw()
