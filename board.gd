@@ -54,7 +54,7 @@ func clear_lines(p_array: Array) -> void :
         _cells.remove_at(index)
         var new_row := []
         new_row.resize(COLS)
-        new_row.fill(".")
+        new_row.fill(EMPTY)
         _cells.insert(0, new_row)
 
 

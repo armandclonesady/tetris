@@ -4,8 +4,19 @@ extends RefCounted
 var type: String
 var shape: Array
 var position: Vector2i
+var rotation_index: int = 0
 
 const TYPES: Array[String] = ["I", "J", "L", "O", "S", "Z", "T"]
+
+const BOX_SIZE := {
+	"I": 4, 
+	"O": 2, 
+	"J": 3, 
+	"L": 3, 
+	"S": 3, 
+	"Z": 3, 
+	"T": 3
+}
 
 const COLORS := {
 	".": Color("#000000"),
@@ -19,31 +30,43 @@ const COLORS := {
 }
 
 # TODO: MAKE THAT USE THE SUPER ROTATION SYSTEM
+# const SHAPES := {
+# 	"I": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)],
+# 	"J": [Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0)],
+# 	"L": [Vector2i(1, -1), Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0)],
+# 	"O": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)],
+# 	"S": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, -1)],
+# 	"Z": [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(0, 0), Vector2i(1, 0)],
+# 	"T": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, -1)],
+# }
+
 const SHAPES := {
-	"I": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)],
-	"J": [Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0)],
-	"L": [Vector2i(1, -1), Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0)],
+	"I": [Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1)],
+	"J": [Vector2i(0, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)],
+	"L": [Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)],
 	"O": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)],
-	"S": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, -1)],
-	"Z": [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(0, 0), Vector2i(1, 0)],
-	"T": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, -1)],
+	"S": [Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1)],
+	"Z": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(2, 1)],
+	"T": [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)],
 }
 
-func _init(p_type: String, p_position: Vector2i = Vector2i(4,1)) -> void:
+func _init(p_type: String) -> void:
 	type= p_type
 	shape = SHAPES.get(type)
-	position = p_position
+	if (BOX_SIZE[type] == 2):
+		position = Vector2i(4, 0)
+	else:
+		position = Vector2i(3, 0)
 
 
 func rotate(clockwise: bool = true) -> Array[Vector2i]:
+	var n: int = BOX_SIZE[type]
 	var result: Array[Vector2i] = []
 	for cell in shape:
-		if (type == "O"):
-			result.append(cell)
-		elif clockwise:
-			result.append(Vector2i(-cell.y, cell.x))
+		if (clockwise):
+			result.append(Vector2i(n - 1 - cell.y, cell.x))
 		else:
-			result.append(Vector2i(cell.y, -cell.x))
+			result.append(Vector2i(cell.y, n - 1 - cell.x))
 	return result
 
 func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
@@ -58,6 +81,7 @@ func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
 		canvas.draw_rect(rect, COLORS[type], true, 0.0)
 
 func duplicate() -> Piece:
-	var new_piece := Piece.new(type, position)
+	var new_piece := Piece.new(type)
+	new_piece.position = position
 	new_piece.shape = shape.duplicate()
 	return new_piece

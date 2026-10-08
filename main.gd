@@ -15,6 +15,8 @@ func change_piece() -> void:
 	seven_bag()
 	if not _board.piece_fit(_current_piece.position, _current_piece):
 		print("Game Over")
+		_board.reset()
+		change_piece()
 
 func fill_seven_bag() -> void:
 	for value in Piece.TYPES:
@@ -58,10 +60,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _board.try_move(Vector2i.LEFT, _current_piece):
 			_current_piece.position += Vector2i.LEFT
 			queue_redraw()
+	# a remplacer par propre systerme DAS/ARR
 	elif event.is_action_pressed("move_right", true):
 		if _board.try_move(Vector2i.RIGHT, _current_piece):
 			_current_piece.position += Vector2i.RIGHT
 			queue_redraw()
+	# a remplacer par propre systerme DAS/ARR
 	elif event.is_action_pressed("soft_drop", true):
 		if _board.try_move(Vector2i.DOWN, _current_piece):
 			_current_piece.position += Vector2i.DOWN
@@ -69,12 +73,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("rotate_clockwise", false):
 		var changed_piece = _current_piece.duplicate()
 		changed_piece.shape = _current_piece.rotate(true) 
+		changed_piece.rotation_index = (_current_piece.rotation_index + 1) % 4
 		if _board.piece_fit(_current_piece.position, changed_piece):
 			_current_piece = changed_piece
 			queue_redraw()
 	elif event.is_action_pressed("rotate_counterclockwise", false):
 		var changed_piece = _current_piece.duplicate()
 		changed_piece.shape = _current_piece.rotate(false) 
+		changed_piece.rotation_index = (_current_piece.rotation_index - 1) % 4
 		if _board.piece_fit(_current_piece.position, changed_piece):
 			_current_piece = changed_piece
 			queue_redraw()
