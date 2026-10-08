@@ -3,3 +3,4 @@
 /android/
 *.translation
 export_presets.cfg
+.vscode
