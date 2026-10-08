@@ -110,13 +110,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		try_move(Vector2i.RIGHT)
 	elif event.is_action_pressed("soft_drop", true):
 		try_move(Vector2i.DOWN)
-	elif event.is_action_pressed("rotate_clockwise", false):
-		var changed_piece = _current_piece
+	elif event.is_action_pressed("rotate_clockwise", true):
+		var changed_piece = _current_piece.duplicate()
 		changed_piece.shape = _current_piece.rotate(true) 
 		if piece_fit(_current_piece.position, changed_piece):
 			_current_piece = changed_piece
-	elif event.is_action_pressed("rotate_counterclockwise", false):
-		var changed_piece = _current_piece
+			queue_redraw()
+	elif event.is_action_pressed("rotate_counterclockwise", true):
+		var changed_piece = _current_piece.duplicate()
 		changed_piece.shape = _current_piece.rotate(false) 
 		if piece_fit(_current_piece.position, changed_piece):
 			_current_piece = changed_piece
+			queue_redraw()

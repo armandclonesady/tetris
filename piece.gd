@@ -54,3 +54,8 @@ func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
 			cell_size - 1
 		)
 		canvas.draw_rect(rect, COLORS[type], true, 0.0)
+
+func duplicate() -> Piece:
+	var new_piece := Piece.new(type, position)
+	new_piece.shape = shape.duplicate()
+	return new_piece
