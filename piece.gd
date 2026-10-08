@@ -2,21 +2,20 @@ class_name Piece
 extends RefCounted
 
 var type: String
-var color: Color
 var shape: Array
 var position: Vector2i
 
 const TYPES: Array[String] = ["I", "J", "L", "O", "S", "Z", "T"]
 
 const COLORS := {
-	".": Color.BLACK,
-	"I": Color.LIGHT_BLUE,
-	"J": Color.BLUE, 
-	"L":Color.ORANGE, 
-	"O":Color.YELLOW,
-	"S":Color.GREEN, 
-	"Z":Color.RED, 
-	"T":Color.MAGENTA
+	".": Color("#000000"),
+	"I": Color("#01EDFA"),
+	"J": Color("#485DC5"),
+	"L": Color("#FF910C"),
+	"O": Color("#FEFB34"),
+	"S": Color("#53DA3F"),
+	"Z": Color("#EA141C"),
+	"T": Color("#DD0AB2"),
 }
 
 # TODO: MAKE THAT USE THE SUPER ROTATION SYSTEM
@@ -32,7 +31,6 @@ const SHAPES := {
 
 func _init(p_type: String, p_position: Vector2i = Vector2i(4,1)) -> void:
 	type= p_type
-	color = COLORS.get(type)
 	shape = SHAPES.get(type)
 	position = p_position
 
@@ -55,5 +53,4 @@ func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
 			cell_size - 1,
 			cell_size - 1
 		)
-		canvas.draw_rect(rect, color)
-	
+		canvas.draw_rect(rect, COLORS[type], true, 0.0)

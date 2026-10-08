@@ -10,7 +10,6 @@ var _fall_timer := 0.0
 # TODO: eventually make that change with the score
 const FALL_DELAY := 0.5
 var _board: Array[Array]
-var _pieces = [Piece.new("I"), Piece.new("J"), Piece.new("L"), Piece.new("O"), Piece.new("S"), Piece.new("Z"), Piece.new("T")]
 
 var _current_piece: Piece
 
@@ -41,7 +40,7 @@ func try_move(dir: Vector2i) -> bool:
 		_current_piece.position += dir
 		queue_redraw()
 		return true
-	
+
 func lock_piece() -> void:
 	for offset in _current_piece.shape:
 		var cell: Vector2i = offset + _current_piece.position
@@ -72,7 +71,7 @@ func clear_lines(p_array: Array) -> void :
 
 func _ready() -> void:
 	init_board()
-	_current_piece = Piece.new("L", Vector2i(4, 1))
+	_current_piece = Piece.new(Piece.TYPES.pick_random())
 
 func draw_board() -> void:
 	for i in range(ROWS):
@@ -84,14 +83,13 @@ func draw_board() -> void:
 				CELL_SIZE,
 				CELL_SIZE
 			)
-			if (value != EMPTY):
-				draw_rect(rect, Piece.COLORS[value], true, 0.0)
-			draw_rect(rect, Color.GRAY, false, 1.0)
+			draw_rect(rect, Piece.COLORS[value], true, 0.0)
+			draw_rect(rect, Color.WHITE, false, 1.0)
 
 func _draw() -> void:
 	draw_rect(Rect2(BOARD_ORIGIN, Vector2(COLS*CELL_SIZE,ROWS*CELL_SIZE)), Color.BLACK, true ,0.0)
-	draw_rect(Rect2(BOARD_ORIGIN, Vector2(COLS*CELL_SIZE,ROWS*CELL_SIZE)), Color.WHITE, false ,1.0)
 	draw_board()
+	draw_rect(Rect2(BOARD_ORIGIN, Vector2(COLS*CELL_SIZE,ROWS*CELL_SIZE)), Color.WHITE, false ,1.0)
 	#_current_piece.draw(self, _current_piece.position, CELL_SIZE)
 	_current_piece.draw(self, BOARD_ORIGIN, CELL_SIZE)
 
@@ -113,6 +111,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("soft_drop", true):
 		try_move(Vector2i.DOWN)
 	elif event.is_action_pressed("rotate_clockwise", false):
-		_current_piece.shape = _current_piece.rotate(true)
+		var changed_piece = _current_piece
+		changed_piece.shape = _current_piece.rotate(true) 
+		if piece_fit(_current_piece.position, changed_piece):
+			_current_piece = changed_piece
 	elif event.is_action_pressed("rotate_counterclockwise", false):
-		_current_piece.shape =  _current_piece.rotate(false)
+		var changed_piece = _current_piece
+		changed_piece.shape = _current_piece.rotate(false) 
+		if piece_fit(_current_piece.position, changed_piece):
+			_current_piece = changed_piece
