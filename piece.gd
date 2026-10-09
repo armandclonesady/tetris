@@ -18,6 +18,8 @@ const BOX_SIZE := {
 	"T": 3
 }
 
+const SHADOW_COLOR: Color = Color(215, 215, 215, 0.4)
+
 const COLORS := {
 	".": Color("#000000"),
 	"I": Color("#01EDFA"),
@@ -69,7 +71,7 @@ func rotate(clockwise: bool = true) -> Array[Vector2i]:
 			result.append(Vector2i(cell.y, n - 1 - cell.x))
 	return result
 
-func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
+func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int, color: Color = COLORS[type]) -> void:
 	for cell in shape:
 		var grid_pos: Vector2i = cell + position
 		var rect := Rect2(
@@ -78,7 +80,18 @@ func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
 			cell_size - 1,
 			cell_size - 1
 		)
-		canvas.draw_rect(rect, COLORS[type], true, 0.0)
+		canvas.draw_rect(rect, color, true, 0.0)
+
+func draw_raw(canvas: CanvasItem, origin: Vector2i, cell_size: int, color: Color = COLORS[type]) -> void:
+	for cell in shape:
+		var grid_pos: Vector2i = cell
+		var rect := Rect2(
+			origin.x + (grid_pos.x * cell_size),
+			origin.y + (grid_pos.y * cell_size),
+			cell_size - 1,
+			cell_size - 1
+		)
+		canvas.draw_rect(rect, color, true, 0.0)
 
 func duplicate() -> Piece:
 	var new_piece := Piece.new(type)
