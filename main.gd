@@ -1,13 +1,17 @@
 extends Node2D
 
 const BOARD_ORIGIN := Vector2i(CELL_SIZE, CELL_SIZE)
-const HELD_PIECE_ORIGIN := Vector2i(BOARD_ORIGIN.x + CELL_SIZE * (Board.COLS+2), BOARD_ORIGIN.y)
+const HELD_BOARD_ORIGIN := Vector2i(BOARD_ORIGIN.x + (Board.COLS + 1) * CELL_SIZE, BOARD_ORIGIN.y)
+const HELD_PIECE_ORIGIN := Vector2i(HELD_BOARD_ORIGIN.x+HELD_CELL_SIZE, HELD_BOARD_ORIGIN.y + 3*HELD_CELL_SIZE/2)
 const CELL_SIZE = 32
+const HELD_CELL_SIZE = 16
 var _fall_timer := 0.0
 var _soft_drop_timer := 0.0
+var _combo := 0
 # TODO: eventually make that change with the score
-const FALL_DELAY := 0.5
-const SOFT_DROP_DELAY := 0.09
+const _FALL_DELAY := 0.5
+var _lock_delay := 0.5
+const _SOFT_DROP_DELAY := 0.08
 var _board: Board
 
 var _current_piece: Piece
@@ -64,24 +68,25 @@ func draw_lowest_position() -> void:
 
 func _draw() -> void:
 	_board.draw_modular_board(self, BOARD_ORIGIN, CELL_SIZE)
-	_current_piece.draw(self, BOARD_ORIGIN, CELL_SIZE)
-	_board.draw_held_piece_square(self, HELD_PIECE_ORIGIN, CELL_SIZE)
-	if (_held_piece != null):
-		_held_piece.draw_raw(self, HELD_PIECE_ORIGIN, CELL_SIZE)
 	draw_lowest_position()
+	_current_piece.draw(self, BOARD_ORIGIN, CELL_SIZE)
+	
+	_board.draw_held_piece_square(self, HELD_BOARD_ORIGIN, HELD_CELL_SIZE)
+	if (_held_piece != null):
+		_held_piece.draw_raw(self, HELD_PIECE_ORIGIN, HELD_CELL_SIZE)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	_fall_timer += delta
 	# handle the piece falling down
-	if (_fall_timer >= FALL_DELAY):
+	if (_fall_timer >= _FALL_DELAY):
 		# if the piece can't move down, lock it in place and check for lines to clear
 		move_piece_down()
 		_fall_timer = 0.0
 	elif (Input.is_action_pressed("soft_drop")):
 		_soft_drop_timer += delta
-		if (_soft_drop_timer >= SOFT_DROP_DELAY):
-			_soft_drop_timer -= SOFT_DROP_DELAY
+		if (_soft_drop_timer >= _SOFT_DROP_DELAY):
+			_soft_drop_timer -= _SOFT_DROP_DELAY
 			if _board.try_move(Vector2i.DOWN, _current_piece):
 				_current_piece.position += Vector2i.DOWN
 	else:
@@ -112,7 +117,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_current_piece = changed_piece
 	elif event.is_action_pressed("hold_piece"):
 		if (_held_piece == null):
-			_held_piece = _current_piece.duplicate()
+			_held_piece = Piece.new(_current_piece.type)
 			new_piece()
 		else:
 			var temp = Piece.new(_current_piece.type)

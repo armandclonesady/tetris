@@ -75,5 +75,6 @@ func draw_modular_board(canvas: CanvasItem, origin: Vector2i, cell_size: int, p_
 
 
 func draw_held_piece_square(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
-	var held_piece_origin = Vector2i(origin.x + cell_size * (COLS+2), origin.y)
-	canvas.draw_rect(Rect2(held_piece_origin, Vector2(cell_size*4,cell_size*4)), Color.BLACK, true ,0.0)
+	var rect := Rect2(origin, Vector2(cell_size*5,cell_size*5))
+	canvas.draw_rect(rect, Color.BLACK, true ,0.0)
+	canvas.draw_rect(rect, Color.WHITE, false ,1.0)

@@ -83,6 +83,11 @@ func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int, color: Color = C
 		canvas.draw_rect(rect, color, true, 0.0)
 
 func draw_raw(canvas: CanvasItem, origin: Vector2i, cell_size: int, color: Color = COLORS[type]) -> void:
+	if (type == "O"):
+		origin.x += cell_size/2
+	elif (type == "I"):
+		origin.x -= cell_size/2
+		origin.y -= cell_size/2		
 	for cell in shape:
 		var grid_pos: Vector2i = cell
 		var rect := Rect2(
