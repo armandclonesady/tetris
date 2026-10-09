@@ -8,6 +8,7 @@ const HELD_CELL_SIZE = 16
 var _fall_timer := 0.0
 var _soft_drop_timer := 0.0
 var _combo := 0
+var _can_hold := true
 # TODO: eventually make that change with the score
 const _FALL_DELAY := 0.5
 var _lock_delay := 0.5
@@ -19,6 +20,7 @@ var _held_piece: Piece
 var _seven_bag: Array[Piece] = []
 
 func new_piece() -> void:
+	_can_hold = true
 	var next_piece = seven_bag()
 	_current_piece = next_piece
 	if not _board.piece_fit(_current_piece.position, _current_piece):
@@ -119,7 +121,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if (_held_piece == null):
 			_held_piece = Piece.new(_current_piece.type)
 			new_piece()
-		else:
+			_can_hold = false
+		elif (_can_hold):
+			_can_hold = false
 			var temp = Piece.new(_current_piece.type)
 			_current_piece = Piece.new(_held_piece.type)
 			_held_piece = temp.duplicate()
