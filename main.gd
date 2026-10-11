@@ -38,14 +38,18 @@ func move_piece_down() -> void:
 		new_piece()
 		
 func SRS_rotation(p_clockwise: bool) -> void:
-	var changed_piece = _current_piece.duplicate()
-	changed_piece.shape = _current_piece.rotate(p_clockwise)
-	# changed_piece.rotation_index = _current_piece.calculate_new_rotation_index(p_clockwise)
-	for i in range (Piece.WALL_KICK_DATA.size()):
-		changed_piece.shape = changed_piece.apply_wall_kick(p_clockwise, i)
-		if _board.piece_fit(_current_piece.position, changed_piece):
-			_current_piece = changed_piece
+	var rotated_piece = _current_piece.duplicate()
+	rotated_piece.shape = _current_piece.rotate(p_clockwise)
+	var old_shape = rotated_piece.shape
+	var kicks = _current_piece.get_kicks(p_clockwise)
+	rotated_piece.rotation_index = _current_piece.calculate_new_rotation_index(p_clockwise)
+	for kick in kicks:
+		var test_pos = _current_piece.position + kick
+		if _board.piece_fit(test_pos, rotated_piece):
+			rotated_piece.position = test_pos
+			_current_piece = rotated_piece
 			return
+			
 
 func lowest_position() -> Vector2i:
 	var lowest_pos = _current_piece.position
@@ -116,17 +120,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("hard_drop", false):
 		hard_drop()
 	elif event.is_action_pressed("rotate_clockwise", false):
-		var changed_piece = _current_piece.duplicate()
-		changed_piece.shape = _current_piece.rotate(true)
-		changed_piece.rotation_index = _current_piece.calculate_new_rotation_index(true)
-		if _board.piece_fit(_current_piece.position, changed_piece):
-			_current_piece = changed_piece
+		SRS_rotation(true)
 	elif event.is_action_pressed("rotate_counterclockwise", false):
-		var changed_piece = _current_piece.duplicate()
-		changed_piece.shape = _current_piece.rotate(false) 
-		changed_piece.rotation_index = _current_piece.calculate_new_rotation_index(false)
-		if _board.piece_fit(_current_piece.position, changed_piece):
-			_current_piece = changed_piece
+		SRS_rotation(false)
 	elif event.is_action_pressed("hold_piece"):
 		if (_held_piece == null):
 			_held_piece = Piece.new(_current_piece.type)

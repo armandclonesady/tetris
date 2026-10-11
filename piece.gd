@@ -80,6 +80,14 @@ func calculate_new_rotation_index(p_clockwise: bool = true) -> String:
 	else:
 		return ROTATIONS[current_index-1 % ROTATIONS.size()]
 
+func get_kicks(p_clockwise: bool) -> Array:
+	if type == "0":
+		return [Vector2i(0,0)]
+	var key = rotation_index+"->"+calculate_new_rotation_index(p_clockwise)
+	if type == "I":
+		return WALL_KICK_DATA_I[key]
+	return WALL_KICK_DATA[key]
+
 func rotate(p_clockwise: bool = true) -> Array[Vector2i]:
 	var n: int = BOX_SIZE[type]
 	var result: Array[Vector2i] = []
@@ -88,16 +96,6 @@ func rotate(p_clockwise: bool = true) -> Array[Vector2i]:
 			result.append(Vector2i(n - 1 - cell.y, cell.x))
 		else:
 			result.append(Vector2i(cell.y, n - 1 - cell.x))
-	return result
-
-func apply_wall_kick(p_clockwise: bool = true, p_try: int = 0) -> Array[Vector2i]:
-	var result: Array[Vector2i] = []
-	var rotation = rotation_index+"->"+calculate_new_rotation_index(p_clockwise)
-	var wall_kick = WALL_KICK_DATA[rotation][p_try]
-	if (type == "I"):
-		wall_kick = WALL_KICK_DATA_I[rotation_index][p_try]
-	for cell in shape:
-			result.append(cell+wall_kick)
 	return result
 
 func draw(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int, p_color: Color = COLORS[type]) -> void:
