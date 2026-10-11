@@ -3,8 +3,17 @@ extends Node2D
 const BOARD_ORIGIN := Vector2i(CELL_SIZE, CELL_SIZE)
 const HELD_BOARD_ORIGIN := Vector2i(BOARD_ORIGIN.x + (Board.COLS + 1) * CELL_SIZE, BOARD_ORIGIN.y)
 const HELD_PIECE_ORIGIN := Vector2i(HELD_BOARD_ORIGIN.x+HELD_CELL_SIZE, HELD_BOARD_ORIGIN.y + 3*HELD_CELL_SIZE/2)
-const CELL_SIZE = 32
-const HELD_CELL_SIZE = 16
+const CELL_SIZE := 32
+const HELD_CELL_SIZE := 16
+
+#-1 left / 0 null / 1 droite
+var _das_dir := 0
+var _das_timer := 0
+var _arr_timer := 0
+
+const DAS_DELAY := 0.13
+const ARR_DELAY := 0.03
+
 var _fall_timer := 0.0
 var _soft_drop_timer := 0.0
 var _combo := 0
@@ -82,6 +91,25 @@ func draw_lowest_position() -> void:
 	shadow_piece.position = lowest_position()
 	shadow_piece.draw(self, BOARD_ORIGIN, CELL_SIZE, Piece.SHADOW_COLOR)
 
+func shift(direction: Vector2i) -> bool:
+	if not _board.try_move(direction, _current_piece):
+		return false
+	_current_piece.position += direction
+	return true
+
+func das_arr(direction: Vector2i, delta: float) -> void:
+	_das_timer += delta
+	if (_das_timer < DAS_DELAY):
+		return
+	if (ARR_DELAY == 0):
+		while (shift(direction)):
+			pass
+	else:
+		_arr_timer += delta
+		while _arr_timer >= ARR_DELAY:
+			_arr_timer -= ARR_DELAY
+			shift(direction)
+
 func _draw() -> void:
 	_board.draw_modular_board(self, BOARD_ORIGIN, CELL_SIZE)
 	draw_lowest_position()
@@ -103,20 +131,18 @@ func _process(delta: float) -> void:
 		_soft_drop_timer += delta
 		if (_soft_drop_timer >= _SOFT_DROP_DELAY):
 			_soft_drop_timer -= _SOFT_DROP_DELAY
-			if _board.try_move(Vector2i.DOWN, _current_piece):
-				_current_piece.position += Vector2i.DOWN
+			shift(Vector2i.DOWN)
 	else:
 		_soft_drop_timer = 0.0
 	queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("move_left", true):
-		if _board.try_move(Vector2i.LEFT, _current_piece):
-			_current_piece.position += Vector2i.LEFT
-	# a remplacer par propre systerme DAS/ARR
-	elif event.is_action_pressed("move_right", true):
-		if _board.try_move(Vector2i.RIGHT, _current_piece):
-			_current_piece.position += Vector2i.RIGHT
+	if event.is_action_pressed("move_left", false):
+		var direction = Vector2i.LEFT
+		shift(direction)
+	elif event.is_action_pressed("move_right", false):
+		var direction = Vector2i.RIGHT
+		shift(direction)
 	elif event.is_action_pressed("hard_drop", false):
 		hard_drop()
 	elif event.is_action_pressed("rotate_clockwise", false):
