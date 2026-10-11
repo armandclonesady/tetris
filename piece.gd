@@ -4,9 +4,11 @@ extends RefCounted
 var type: String
 var shape: Array
 var position: Vector2i
-var rotation_index: int = 0
+var rotation_index: String = "0"
 
 const TYPES: Array[String] = ["I", "J", "L", "O", "S", "Z", "T"]
+
+const ROTATIONS: Array[String] = ["L", "0", "R", "2"]
 
 const BOX_SIZE := {
 	"I": 4, 
@@ -32,15 +34,26 @@ const COLORS := {
 }
 
 # TODO: MAKE THAT USE THE SUPER ROTATION SYSTEM
-# const SHAPES := {
-# 	"I": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)],
-# 	"J": [Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0)],
-# 	"L": [Vector2i(1, -1), Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0)],
-# 	"O": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)],
-# 	"S": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, -1)],
-# 	"Z": [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(0, 0), Vector2i(1, 0)],
-# 	"T": [Vector2i(-1, 0), Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, -1)],
-# }
+const WALL_KICK_DATA:= {
+	"0->R": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, +1), Vector2i(0, -2), Vector2i(-1, -2)],
+	"R->0": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, -1), Vector2i(0, +2), Vector2i(+1, +2)],
+	"R->2": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, -1), Vector2i(0, +2), Vector2i(+1, +2)],
+	"2->R": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, +1), Vector2i(0, -2), Vector2i(-1, -2)],
+	"2->L": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, +1), Vector2i(0, -2), Vector2i(+1, -2)],
+	"L->2": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, +2), Vector2i(-1, +2)],
+	"L->0": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, +2), Vector2i(-1, +2)],
+	"0->L": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, +1), Vector2i(0, -2), Vector2i(+1, -2)]
+}
+const WALL_KICK_DATA_I:= {
+	"0->R": [Vector2i(0, 0), Vector2i(-2, 0), Vector2i(+1, 0), Vector2i(-2,-1), Vector2i(+1,+2)],
+	"R->0": [Vector2i(0, 0), Vector2i(+2, 0), Vector2i(-1, 0), Vector2i(+2,+1), Vector2i(-1,-2)],
+	"R->2": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(+2, 0), Vector2i(-1,+2), Vector2i(+2,-1)],
+	"2->R": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(-2, 0), Vector2i(+1,-2), Vector2i(-2,+1)],
+	"2->L": [Vector2i(0, 0), Vector2i(+2, 0), Vector2i(-1, 0), Vector2i(+2,+1), Vector2i(-1,-2)],
+	"L->2": [Vector2i(0, 0), Vector2i(-2, 0), Vector2i(+1, 0), Vector2i(-2,-1), Vector2i(+1,+2)],
+	"L->0": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(-2, 0), Vector2i(+1,-2), Vector2i(-2,+1)],
+	"0->L": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(+2, 0), Vector2i(-1,+2), Vector2i(+2,-1)]
+}
 
 const SHAPES := {
 	"I": [Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1)],
@@ -60,43 +73,59 @@ func _init(p_type: String) -> void:
 	else:
 		position = Vector2i(3, 0)
 
+func calculate_new_rotation_index(p_clockwise: bool = true) -> String:
+	var current_index: int = ROTATIONS.find(rotation_index)
+	if p_clockwise:
+		return ROTATIONS[(current_index+1) % ROTATIONS.size()]
+	else:
+		return ROTATIONS[current_index-1 % ROTATIONS.size()]
 
-func rotate(clockwise: bool = true) -> Array[Vector2i]:
+func rotate(p_clockwise: bool = true) -> Array[Vector2i]:
 	var n: int = BOX_SIZE[type]
 	var result: Array[Vector2i] = []
 	for cell in shape:
-		if (clockwise):
+		if (p_clockwise):
 			result.append(Vector2i(n - 1 - cell.y, cell.x))
 		else:
 			result.append(Vector2i(cell.y, n - 1 - cell.x))
 	return result
 
-func draw(canvas: CanvasItem, origin: Vector2i, cell_size: int, color: Color = COLORS[type]) -> void:
+func apply_wall_kick(p_clockwise: bool = true, p_try: int = 0) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	var rotation = rotation_index+"->"+calculate_new_rotation_index(p_clockwise)
+	var wall_kick = WALL_KICK_DATA[rotation][p_try]
+	if (type == "I"):
+		wall_kick = WALL_KICK_DATA_I[rotation_index][p_try]
+	for cell in shape:
+			result.append(cell+wall_kick)
+	return result
+
+func draw(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int, p_color: Color = COLORS[type]) -> void:
 	for cell in shape:
 		var grid_pos: Vector2i = cell + position
 		var rect := Rect2(
-			origin.x + (grid_pos.x * cell_size),
-			origin.y + (grid_pos.y * cell_size),
-			cell_size - 1,
-			cell_size - 1
+			p_origin.x + (grid_pos.x * p_cell_size),
+			p_origin.y + (grid_pos.y * p_cell_size),
+			p_cell_size - 1,
+			p_cell_size - 1
 		)
-		canvas.draw_rect(rect, color, true, 0.0)
+		p_canvas.draw_rect(rect, p_color, true, 0.0)
 
-func draw_raw(canvas: CanvasItem, origin: Vector2i, cell_size: int, color: Color = COLORS[type]) -> void:
+func draw_raw(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int, p_color: Color = COLORS[type]) -> void:
 	if (type == "O"):
-		origin.x += cell_size/2
+		p_origin.x += p_cell_size/2
 	elif (type == "I"):
-		origin.x -= cell_size/2
-		origin.y -= cell_size/2		
+		p_origin.x -= p_cell_size/2
+		p_origin.y -= p_cell_size/2
 	for cell in shape:
 		var grid_pos: Vector2i = cell
 		var rect := Rect2(
-			origin.x + (grid_pos.x * cell_size),
-			origin.y + (grid_pos.y * cell_size),
-			cell_size - 1,
-			cell_size - 1
+			p_origin.x + (grid_pos.x * p_cell_size),
+			p_origin.y + (grid_pos.y * p_cell_size),
+			p_cell_size - 1,
+			p_cell_size - 1
 		)
-		canvas.draw_rect(rect, color, true, 0.0)
+		p_canvas.draw_rect(rect, p_color, true, 0.0)
 
 func duplicate() -> Piece:
 	var new_piece := Piece.new(type)

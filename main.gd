@@ -36,6 +36,16 @@ func move_piece_down() -> void:
 		var lines_to_clean = _board.check_lines()
 		_board.clear_lines(lines_to_clean)
 		new_piece()
+		
+func SRS_rotation(p_clockwise: bool) -> void:
+	var changed_piece = _current_piece.duplicate()
+	changed_piece.shape = _current_piece.rotate(p_clockwise)
+	# changed_piece.rotation_index = _current_piece.calculate_new_rotation_index(p_clockwise)
+	for i in range (Piece.WALL_KICK_DATA.size()):
+		changed_piece.shape = changed_piece.apply_wall_kick(p_clockwise, i)
+		if _board.piece_fit(_current_piece.position, changed_piece):
+			_current_piece = changed_piece
+			return
 
 func lowest_position() -> Vector2i:
 	var lowest_pos = _current_piece.position
@@ -107,14 +117,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		hard_drop()
 	elif event.is_action_pressed("rotate_clockwise", false):
 		var changed_piece = _current_piece.duplicate()
-		changed_piece.shape = _current_piece.rotate(true) 
-		changed_piece.rotation_index = (_current_piece.rotation_index + 1) % 4
+		changed_piece.shape = _current_piece.rotate(true)
+		changed_piece.rotation_index = _current_piece.calculate_new_rotation_index(true)
 		if _board.piece_fit(_current_piece.position, changed_piece):
 			_current_piece = changed_piece
 	elif event.is_action_pressed("rotate_counterclockwise", false):
 		var changed_piece = _current_piece.duplicate()
 		changed_piece.shape = _current_piece.rotate(false) 
-		changed_piece.rotation_index = (_current_piece.rotation_index - 1) % 4
+		changed_piece.rotation_index = _current_piece.calculate_new_rotation_index(false)
 		if _board.piece_fit(_current_piece.position, changed_piece):
 			_current_piece = changed_piece
 	elif event.is_action_pressed("hold_piece"):

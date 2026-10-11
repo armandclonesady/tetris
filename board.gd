@@ -17,8 +17,8 @@ func reset() -> void:
 		for j in range(COLS):
 			_cells[i].append(EMPTY)
 
-func try_move(dir: Vector2i, p_piece: Piece) -> bool:
-	if not piece_fit(p_piece.position+dir, p_piece):
+func try_move(p_dir: Vector2i, p_piece: Piece) -> bool:
+	if not piece_fit(p_piece.position+p_dir, p_piece):
 		return false
 	else:
 		return true
@@ -58,20 +58,20 @@ func clear_lines(p_array: Array) -> void :
 		new_row.fill(EMPTY)
 		_cells.insert(0, new_row)
 
-func draw_modular_board(canvas: CanvasItem, origin: Vector2i, cell_size: int, p_rows: int = ROWS, p_cols: int = COLS) -> void:
-	canvas.draw_rect(Rect2(origin, Vector2(p_cols*cell_size,p_rows*cell_size)), Color.BLACK, true ,0.0)
+func draw_modular_board(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int, p_rows: int = ROWS, p_cols: int = COLS) -> void:
+	p_canvas.draw_rect(Rect2(p_origin, Vector2(p_cols*p_cell_size,p_rows*p_cell_size)), Color.BLACK, true ,0.0)
 	for i in range(p_rows):
 		for j in range(p_cols):
 			var value = _cells[i][j]
 			var rect := Rect2(
-				origin.x + j * cell_size,
-				origin.y + i * cell_size,
-				cell_size,
-				cell_size
+				p_origin.x + j * p_cell_size,
+				p_origin.y + i * p_cell_size,
+				p_cell_size,
+				p_cell_size
 			)
-			canvas.draw_rect(rect, Piece.COLORS[value], true, 0.0)
-			canvas.draw_rect(rect, Color(215, 215, 215, 0.4), false, 1.0)
-	canvas.draw_rect(Rect2(origin, Vector2(p_cols*cell_size,p_rows*cell_size)), Color.WHITE, false ,1.0)
+			p_canvas.draw_rect(rect, Piece.COLORS[value], true, 0.0)
+			p_canvas.draw_rect(rect, Color(215, 215, 215, 0.4), false, 1.0)
+	p_canvas.draw_rect(Rect2(p_origin, Vector2(p_cols*p_cell_size,p_rows*p_cell_size)), Color.WHITE, false ,1.0)
 
 
 func draw_held_piece_square(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
