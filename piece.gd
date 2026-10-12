@@ -34,25 +34,26 @@ const COLORS := {
 }
 
 # TODO: MAKE THAT USE THE SUPER ROTATION SYSTEM
-const WALL_KICK_DATA:= {
-	"0->R": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, +1), Vector2i(0, -2), Vector2i(-1, -2)],
-	"R->0": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, -1), Vector2i(0, +2), Vector2i(+1, +2)],
-	"R->2": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, -1), Vector2i(0, +2), Vector2i(+1, +2)],
-	"2->R": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, +1), Vector2i(0, -2), Vector2i(-1, -2)],
-	"2->L": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, +1), Vector2i(0, -2), Vector2i(+1, -2)],
-	"L->2": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, +2), Vector2i(-1, +2)],
-	"L->0": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, +2), Vector2i(-1, +2)],
-	"0->L": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(+1, +1), Vector2i(0, -2), Vector2i(+1, -2)]
+const WALL_KICK_DATA := {
+	"0->R": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, 2), Vector2i(-1, 2)],
+	"R->0": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, -2), Vector2i(1, -2)],
+	"R->2": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, -2), Vector2i(1, -2)],
+	"2->R": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, 2), Vector2i(-1, 2)],
+	"2->L": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, 2), Vector2i(1, 2)],
+	"L->2": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, -2), Vector2i(-1, -2)],
+	"L->0": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, -2), Vector2i(-1, -2)],
+	"0->L": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, 2), Vector2i(1, 2)],
 }
-const WALL_KICK_DATA_I:= {
-	"0->R": [Vector2i(0, 0), Vector2i(-2, 0), Vector2i(+1, 0), Vector2i(-2,-1), Vector2i(+1,+2)],
-	"R->0": [Vector2i(0, 0), Vector2i(+2, 0), Vector2i(-1, 0), Vector2i(+2,+1), Vector2i(-1,-2)],
-	"R->2": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(+2, 0), Vector2i(-1,+2), Vector2i(+2,-1)],
-	"2->R": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(-2, 0), Vector2i(+1,-2), Vector2i(-2,+1)],
-	"2->L": [Vector2i(0, 0), Vector2i(+2, 0), Vector2i(-1, 0), Vector2i(+2,+1), Vector2i(-1,-2)],
-	"L->2": [Vector2i(0, 0), Vector2i(-2, 0), Vector2i(+1, 0), Vector2i(-2,-1), Vector2i(+1,+2)],
-	"L->0": [Vector2i(0, 0), Vector2i(+1, 0), Vector2i(-2, 0), Vector2i(+1,-2), Vector2i(-2,+1)],
-	"0->L": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(+2, 0), Vector2i(-1,+2), Vector2i(+2,-1)]
+
+const WALL_KICK_DATA_I := {
+	"0->R": [Vector2i(0, 0), Vector2i(-2, 0), Vector2i(1, 0), Vector2i(-2, 1), Vector2i(1, -2)],
+	"R->0": [Vector2i(0, 0), Vector2i(2, 0), Vector2i(-1, 0), Vector2i(2, -1), Vector2i(-1, 2)],
+	"R->2": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(2, 0), Vector2i(-1, -2), Vector2i(2, 1)],
+	"2->R": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(-2, 0), Vector2i(1, 2), Vector2i(-2, -1)],
+	"2->L": [Vector2i(0, 0), Vector2i(2, 0), Vector2i(-1, 0), Vector2i(2, -1), Vector2i(-1, 2)],
+	"L->2": [Vector2i(0, 0), Vector2i(-2, 0), Vector2i(1, 0), Vector2i(-2, 1), Vector2i(1, -2)],
+	"L->0": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(-2, 0), Vector2i(1, 2), Vector2i(-2, -1)],
+	"0->L": [Vector2i(0, 0), Vector2i(-1, 0), Vector2i(2, 0), Vector2i(-1, -2), Vector2i(2, 1)],
 }
 
 const SHAPES := {
@@ -81,7 +82,7 @@ func calculate_new_rotation_index(p_clockwise: bool = true) -> String:
 		return ROTATIONS[current_index-1 % ROTATIONS.size()]
 
 func get_kicks(p_clockwise: bool) -> Array:
-	if type == "0":
+	if type == "O":
 		return [Vector2i(0,0)]
 	var key = rotation_index+"->"+calculate_new_rotation_index(p_clockwise)
 	if type == "I":
@@ -128,5 +129,6 @@ func draw_raw(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int, p_colo
 func duplicate() -> Piece:
 	var new_piece := Piece.new(type)
 	new_piece.position = position
+	new_piece.rotation_index = rotation_index
 	new_piece.shape = shape.duplicate()
 	return new_piece

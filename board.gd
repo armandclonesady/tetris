@@ -1,7 +1,10 @@
 class_name Board
 extends RefCounted
 
-const ROWS = 20
+
+const HIDDEN_ROWS = 2
+const VISIBLE_ROWS = 20
+const ROWS = HIDDEN_ROWS + VISIBLE_ROWS
 const COLS = 10
 const EMPTY := "."
 
@@ -34,10 +37,15 @@ func piece_fit(p_position: Vector2i, p_piece: Piece) -> bool:
 			return false
 	return true;
 
-func lock(p_piece: Piece) -> void:
+func lock(p_piece: Piece) -> bool:
+	var illegal_cell_count = 0
 	for offset in p_piece.shape:
 		var cell: Vector2i = offset + p_piece.position
 		_cells[cell.y][cell.x] = p_piece.type
+		if (cell.y < HIDDEN_ROWS):
+			illegal_cell_count += 1
+	return not (illegal_cell_count == 4)
+		
 
 func check_lines() -> Array:
 	var result = []
@@ -58,10 +66,10 @@ func clear_lines(p_array: Array) -> void :
 		new_row.fill(EMPTY)
 		_cells.insert(0, new_row)
 
-func draw_modular_board(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int, p_rows: int = ROWS, p_cols: int = COLS) -> void:
-	p_canvas.draw_rect(Rect2(p_origin, Vector2(p_cols*p_cell_size,p_rows*p_cell_size)), Color.BLACK, true ,0.0)
-	for i in range(p_rows):
-		for j in range(p_cols):
+func draw_board(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int) -> void:
+	p_canvas.draw_rect(Rect2(p_origin, Vector2(COLS*p_cell_size,ROWS*p_cell_size)), Color.BLACK, true ,0.0)
+	for i in range(ROWS):
+		for j in range(COLS):
 			var value = _cells[i][j]
 			var rect := Rect2(
 				p_origin.x + j * p_cell_size,
@@ -70,8 +78,17 @@ func draw_modular_board(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: i
 				p_cell_size
 			)
 			p_canvas.draw_rect(rect, Piece.COLORS[value], true, 0.0)
+	for i in range(HIDDEN_ROWS, ROWS):
+		for j in range(COLS):
+			var value = _cells[i][j]
+			var rect := Rect2(
+				p_origin.x + j * p_cell_size,
+				p_origin.y + i * p_cell_size,
+				p_cell_size,
+				p_cell_size
+			)
 			p_canvas.draw_rect(rect, Color(215, 215, 215, 0.4), false, 1.0)
-	p_canvas.draw_rect(Rect2(p_origin, Vector2(p_cols*p_cell_size,p_rows*p_cell_size)), Color.WHITE, false ,1.0)
+	p_canvas.draw_rect(Rect2(p_origin, Vector2(COLS*p_cell_size,ROWS*p_cell_size)), Color.WHITE, false ,1.0)
 
 
 func draw_held_piece_square(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:

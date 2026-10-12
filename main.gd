@@ -35,9 +35,12 @@ func new_piece() -> void:
     var next_piece = seven_bag()
     _current_piece = next_piece
     if not _board.piece_fit(_current_piece.position, _current_piece):
-        print("Game Over")
-        _board.reset()
-        new_piece()
+        game_over_state()
+
+func game_over_state() -> void:
+    print("Game Over")
+    _board.reset()
+    new_piece()
 
 func move_piece_down(delta: float = 0.0) -> void:
     _fall_timer += delta
@@ -50,7 +53,6 @@ func move_piece_down(delta: float = 0.0) -> void:
     if (not can_move_down):
         _lock_timer += delta
         if (_lock_timer >= LOCK_DELAY):
-            print(_lock_reset_count)
             _lock_timer = 0.0
             lock_current_piece()
             _lock_reset_count = 0
@@ -63,6 +65,8 @@ func SRS_rotation(p_clockwise: bool) -> void:
     rotated_piece.rotation_index = _current_piece.calculate_new_rotation_index(p_clockwise)
     for kick in kicks:
         var test_pos = _current_piece.position + kick
+        print(_current_piece.rotation_index, "->", rotated_piece.rotation_index,
+        " kick=", kick, " pos=", test_pos, " fit=", _board.piece_fit(test_pos, rotated_piece))
         if _board.piece_fit(test_pos, rotated_piece):
             rotated_piece.position = test_pos
             _current_piece = rotated_piece
@@ -77,7 +81,8 @@ func try_lock_reset() -> void:
         _lock_timer = 0.0
 
 func lock_current_piece() -> void:
-    _board.lock(_current_piece)
+    if not _board.lock(_current_piece):
+        game_over_state()
     _board.clear_lines(_board.check_lines())
     new_piece()
 
@@ -89,7 +94,7 @@ func lowest_position() -> Vector2i:
 
 func hard_drop() -> void:
     _current_piece.position = lowest_position()
-    move_piece_down()
+    lock_current_piece()
     queue_redraw()
 
 func fill_seven_bag() -> void:
@@ -105,6 +110,9 @@ func seven_bag() -> Piece:
 
 func _ready() -> void:
     _board = Board.new()
+    #_board._cells[17] = ["S",".",".","S","S","S","S","S","S","S"]
+    #_board._cells[18] = ["S",".",".",".","S","S","S","S","S","S"]
+    #_board._cells[19] = ["S","S",".","S","S","S","S","S","S","S"]
     new_piece()
 
 func draw_lowest_position() -> void:
@@ -133,7 +141,7 @@ func das_arr(direction: Vector2i, delta: float) -> void:
             shift(direction)
 
 func _draw() -> void:
-    _board.draw_modular_board(self, BOARD_ORIGIN, CELL_SIZE)
+    _board.draw_board(self, BOARD_ORIGIN, CELL_SIZE)
     draw_lowest_position()
     _current_piece.draw(self, BOARD_ORIGIN, CELL_SIZE)
     
