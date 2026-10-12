@@ -8,10 +8,12 @@ const HELD_CELL_SIZE := 16
 
 #-1 left / 0 null / 1 droite
 var _das_dir := 0
-var _das_timer := 0
-var _arr_timer := 0
+var _das_timer := 0.0
+var _arr_timer := 0.0
 
-const DAS_DELAY := 0.13
+const _FALL_DELAY := 0.5
+const _SOFT_DROP_DELAY := 0.08
+const DAS_DELAY := 0.2
 const ARR_DELAY := 0.03
 
 var _fall_timer := 0.0
@@ -19,9 +21,7 @@ var _soft_drop_timer := 0.0
 var _combo := 0
 var _can_hold := true
 # TODO: eventually make that change with the score
-const _FALL_DELAY := 0.5
 var _lock_delay := 0.5
-const _SOFT_DROP_DELAY := 0.08
 var _board: Board
 
 var _current_piece: Piece
@@ -98,7 +98,11 @@ func shift(direction: Vector2i) -> bool:
 	return true
 
 func das_arr(direction: Vector2i, delta: float) -> void:
-	_das_timer += delta
+	print("das_arr delta: " + String.num(delta))
+	_das_timer = _das_timer + delta
+	print("das_arr _das_timer: " + String.num(_das_timer))
+	print(_das_timer)
+	print()
 	if (_das_timer < DAS_DELAY):
 		return
 	if (ARR_DELAY == 0):
@@ -127,24 +131,55 @@ func _process(delta: float) -> void:
 		# if the piece can't move down, lock it in place and check for lines to clear
 		move_piece_down()
 		_fall_timer = 0.0
-	elif (Input.is_action_pressed("soft_drop")):
+	if (Input.is_action_pressed("soft_drop")):
 		_soft_drop_timer += delta
 		if (_soft_drop_timer >= _SOFT_DROP_DELAY):
 			_soft_drop_timer -= _SOFT_DROP_DELAY
 			shift(Vector2i.DOWN)
 	else:
 		_soft_drop_timer = 0.0
+	
+	handle_horizontal(delta)
 	queue_redraw()
 
+func handle_horizontal(delta: float) -> void:
+	var left  := Input.is_action_pressed("move_left")
+	var right := Input.is_action_pressed("move_right")
+	
+	if Input.is_action_just_pressed("move_left"):
+		start_das(-1)
+	elif Input.is_action_just_pressed("move_right"):
+		start_das(1)
+	elif _das_dir == -1 and not left:
+		if right:
+			start_das(1)
+		else:
+			start_das(0)
+	elif _das_dir == 1 and not right:
+		if left:
+			start_das(-1)
+		else:
+			start_das(0)
+	if (_das_dir != 0):
+		das_arr(Vector2i(_das_dir, 0), delta)
+
+func start_das(dir: int) -> void:
+	print("start_das: " +String.num(dir))
+	_das_dir = dir
+	_das_timer = 0.0
+	_arr_timer = 0.0
+	if dir != 0:
+		shift(Vector2i(dir, 0))
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("move_left", false):
+	if event.is_action_pressed("hard_drop", false):
+		hard_drop()
+	elif event.is_action_pressed("move_left", false):
 		var direction = Vector2i.LEFT
-		shift(direction)
+		#shift(direction)
 	elif event.is_action_pressed("move_right", false):
 		var direction = Vector2i.RIGHT
-		shift(direction)
-	elif event.is_action_pressed("hard_drop", false):
-		hard_drop()
+		#shift(direction)
 	elif event.is_action_pressed("rotate_clockwise", false):
 		SRS_rotation(true)
 	elif event.is_action_pressed("rotate_counterclockwise", false):
