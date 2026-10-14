@@ -91,7 +91,12 @@ func draw_board(p_canvas: CanvasItem, p_origin: Vector2i, p_cell_size: int) -> v
 	p_canvas.draw_rect(Rect2(p_origin, Vector2(COLS*p_cell_size,ROWS*p_cell_size)), Color.WHITE, false ,1.0)
 
 
-func draw_held_piece_square(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:
+func draw_held_piece_square(canvas: CanvasItem, origin: Vector2i, cell_size: int) -> void:	
 	var rect := Rect2(origin, Vector2(cell_size*5,cell_size*5))
+	canvas.draw_rect(rect, Color.BLACK, true ,0.0)
+	canvas.draw_rect(rect, Color.WHITE, false ,1.0)
+
+func draw_piece_queue_square(canvas: CanvasItem, origin: Vector2i, cell_size: int, queue_size: int) -> void:
+	var rect := Rect2(origin, Vector2(cell_size*5, 2*cell_size + cell_size*3*queue_size))
 	canvas.draw_rect(rect, Color.BLACK, true ,0.0)
 	canvas.draw_rect(rect, Color.WHITE, false ,1.0)

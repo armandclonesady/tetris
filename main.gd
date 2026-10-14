@@ -1,8 +1,14 @@
 extends Node2D
+class_name PlayerGame
 
 const BOARD_ORIGIN := Vector2i(CELL_SIZE, CELL_SIZE)
+
 const HELD_BOARD_ORIGIN := Vector2i(BOARD_ORIGIN.x + (Board.COLS + 1) * CELL_SIZE, BOARD_ORIGIN.y)
 const HELD_PIECE_ORIGIN := Vector2i(HELD_BOARD_ORIGIN.x+HELD_CELL_SIZE, HELD_BOARD_ORIGIN.y + 3*HELD_CELL_SIZE/2)
+
+const QUEUE_BOARD_ORIGIN := Vector2i(HELD_BOARD_ORIGIN.x, HELD_BOARD_ORIGIN.y + (QUEUE_SIZE*2 * HELD_CELL_SIZE))
+const QUEUE_PIECE_ORIGIN := Vector2i(QUEUE_BOARD_ORIGIN.x + HELD_CELL_SIZE, QUEUE_BOARD_ORIGIN.y + 3*HELD_CELL_SIZE/2)
+
 const CELL_SIZE := 32
 const HELD_CELL_SIZE := 16
 
@@ -25,8 +31,9 @@ var _lock_reset_count = 0
 var _das_dir := 0
 var _combo := 0
 var _can_hold := true
+var _local_multiplayer:= true
 
-
+var _board2: Board
 var _board: Board
 var _current_piece: Piece
 var _held_piece: Piece
@@ -36,6 +43,7 @@ var _seven_bag: Array[Piece] = []
 func new_piece() -> void:
 	for piece in _piece_queue:
 		print(piece.type)
+	print()
 	_can_hold = true
 	var next_piece = get_piece_from_queue()
 	_current_piece = next_piece
@@ -71,8 +79,6 @@ func SRS_rotation(p_clockwise: bool) -> void:
 	rotated_piece.rotation_index = _current_piece.calculate_new_rotation_index(p_clockwise)
 	for kick in kicks:
 		var test_pos = _current_piece.position + kick
-		print(_current_piece.rotation_index, "->", rotated_piece.rotation_index,
-		" kick=", kick, " pos=", test_pos, " fit=", _board.piece_fit(test_pos, rotated_piece))
 		if _board.piece_fit(test_pos, rotated_piece):
 			rotated_piece.position = test_pos
 			_current_piece = rotated_piece
@@ -125,11 +131,7 @@ func init_piece_queue() -> void:
 
 func _ready() -> void:
 	_board = Board.new()
-	#_board._cells[17] = ["S",".",".","S","S","S","S","S","S","S"]
-	#_board._cells[18] = ["S",".",".",".","S","S","S","S","S","S"]
-	#_board._cells[19] = ["S","S",".","S","S","S","S","S","S","S"]
 	init_piece_queue()
-	print(_piece_queue)
 	new_piece()
 
 func draw_lowest_position() -> void:
@@ -163,6 +165,11 @@ func _draw() -> void:
 	_current_piece.draw(self, BOARD_ORIGIN, CELL_SIZE)
 	
 	_board.draw_held_piece_square(self, HELD_BOARD_ORIGIN, HELD_CELL_SIZE)
+	_board.draw_piece_queue_square(self, QUEUE_BOARD_ORIGIN, HELD_CELL_SIZE, QUEUE_SIZE)
+	if (_piece_queue.size() > 0):
+		for i in range(_piece_queue.size()):
+			var piece = _piece_queue[i]
+			piece.draw_raw(self, QUEUE_PIECE_ORIGIN + Vector2i(0, (i*3 * HELD_CELL_SIZE)), HELD_CELL_SIZE)
 	if (_held_piece != null):
 		_held_piece.draw_raw(self, HELD_PIECE_ORIGIN, HELD_CELL_SIZE)
 
